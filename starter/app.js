@@ -1,21 +1,38 @@
-require('./db/conect')
+
 const express = require('express');
 const app = express();
 const tasks = require('./routes/tasks')
+const conectDB = require('./db/conect')
+require('dotenv').config()
+const notFound = require('./middleware/not-found')
+const errorHandlerMiddleware = require('./middleware/error-handler')
 
-
-// middleware
+// middleware left at 2:50:00
+app.use(express.static('./public'))
 app.use(express.json())
 
 
 
 // routes 
-app.get('/hello', (req,res)=>{
-    res.send('Task Manager App')
-})
 
 app.use('/api/v1/tasks', tasks)
 
-const port = 3000
+app.use(notFound)
+app.use(errorHandlerMiddleware)
 
-app.listen(port, console.log(`server is lisining on port ${port}...`))
+const port = process.env.PORT || 3000
+
+
+
+const start = async () =>{
+    try{
+        await conectDB(process.env.MONGO_URI)
+        app.listen(port, console.log(`server is lisining on port ${port}...`))
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+
+start()
+
